@@ -23,7 +23,7 @@ the site profile:
 # Add packagestats to the list of default packages
 p <- options("defaultPackages")
 defaultPackages <- p$defaultPackages
-defaultPackages <- c(defaultPackages, "cluster")
+defaultPackages <- c(defaultPackages, "packagestats")
 options("defaultPackages" = defaultPackages)
 ```
 
