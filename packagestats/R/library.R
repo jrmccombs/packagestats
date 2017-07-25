@@ -31,7 +31,9 @@
 #' of the package and R session.  The identifying information written to each
 #' line of the log file is:
 #' \enumerate{
-#'   \item the name of the R script file as returned by \code{\link[base]{commandArgs}} under the \code{--file} option, or the empty string if the session is interactive
+#'   \item the name of the R script file as returned by
+#'      \code{\link[base]{commandArgs}} under the \code{--file} option, or the
+#'      empty string if the session is interactive
 #'   \item the version of the R programming environment
 #'   \item the name of the package loaded
 #'   \item the version of the package loaded
@@ -53,8 +55,6 @@ function(package, help, pos = 2, lib.loc = NULL, character.only = FALSE,
          logical.return = FALSE, warn.conflicts = TRUE,
          quietly = FALSE, verbose = getOption("verbose")) {
 
-   print("Calling base::library")
-
    # If the package parameter is missing, then no package is to be loaded and
    # the help parameter should be checked.  If neither the package or help
    # parameters is provided, then the current available packages should be
@@ -67,13 +67,15 @@ function(package, help, pos = 2, lib.loc = NULL, character.only = FALSE,
 
       # If the help parameter is missing, then the package is to be loaded
       if (missing(help)) {
+         print("Calling base::library 1")
          r <- base::library(package=package, pos=pos, lib.loc=lib.loc,
                  character.only=TRUE, logical.return=logical.return,
 		 warn.conflicts=warn.conflicts, quietly=quietly,
                  verbose=verbose)
       } else {
-         # This case occurs when the package and the help are parameters
+         # This case occurs when the package and the help parameters
          # are both provided.
+         print("Calling base::library 2")
          r <- base::library(package=package, help=help, pos=pos,
                  lib.loc=lib.loc, character.only=TRUE,
                  logical.return=logical.return, warn.conflicts=warn.conflicts,
@@ -90,13 +92,17 @@ function(package, help, pos = 2, lib.loc = NULL, character.only = FALSE,
          help <- as.character(substitute(help))
       }
 
+      print("Calling base::library 3")
       r <- base::library(help=help, pos=pos, lib.loc=lib.loc,
                     character.only=TRUE, logical.return=logical.return,
                     warn.conflicts=warn.conflicts, quietly=quietly,
                     verbose=verbose)
    } else {
-      r <- base::library(pos, lib.loc, character.only, logical.return,
-         warn.conflicts, quietly, verbose)
+      print("Calling base::library 4")
+      r <- base::library(pos=pos, lib.loc=lib.loc,
+         character.only=character.only, logical.return=logical.return,
+         warn.conflicts=warn.conflicts, quietly=quietly, verbose=verbose)
+      return(r)
    }
 
    if (logical.return) {
@@ -169,7 +175,9 @@ function(package, lib.loc = NULL, quietly = FALSE, warn.conflicts = TRUE,
 #' file for saving this information.  The identifying information written to
 #' each line of the log file is:
 #' \enumerate{
-#'   \item the name of the R script file as returned by \code{\link[base]{commandArgs}} under the \code{--file} option, or the empty string if the session is interactive
+#'   \item the name of the R script file as returned by
+#'      \code{\link[base]{commandArgs}} under the \code{--file} option, or the
+#'      empty string if the session is interactive
 #'   \item the version of the R programming environment
 #'   \item the name of the package loaded
 #'   \item the version of the package loaded
@@ -187,6 +195,7 @@ function(package, lib.loc = NULL, quietly = FALSE, warn.conflicts = TRUE,
 collectStatistics <-
 function(pkgName, pkgVersion) {
 
+   packageName <- getPackageName()
    enableCollectionOption <- "package.stats.enabled"
    logDirOption <- "package.stats.logDirectory"
    logFilePrefixOption <- "package.stats.logFilePrefix"
@@ -197,8 +206,8 @@ function(pkgName, pkgVersion) {
 
    # Make sure needed options are set
    if (is.null(logFilePrefix == NULL) || is.null(logDirectory == NULL)) {
-      warning(sprintf("Options `%s` and `%s` must be set to enable package utilization statistics",
-         logFilePrefix, logDirectory))
+      warning(sprintf("%s: Options `%s` and `%s` must be set to enable package utilization statistics",
+         packageName, logFilePrefix, logDirectory))
       # Deactivate package statistics collection
       options(enableCollectionOption = FALSE)
    } else {
@@ -271,6 +280,7 @@ function(pkgName, pkgVersion) {
             # Get the R version
             rVersion <- paste(R.version$major, R.version$minor, sep=".")
 
+            sep <- c(",", ",", ",", ",", ",", ",", ",", "")
             cat(scriptFile, rVersion, pkgName, pkgVersion,
                systemInfo[["login"]], systemInfo[["user"]], systemInfo[["effective_user"]],
                "\n", file=tempFilePath, sep=",", append=TRUE)
