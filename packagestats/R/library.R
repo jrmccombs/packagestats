@@ -17,29 +17,29 @@
 #' Performs logging of package utilization by the base::library function
 #'
 #' \code{library} performs logging of package utilization by R sessions when
-#' the \code{\link[base]{library}} function is called
+#' the \code{base::library} function is called
 #'
 #' This function performs logging of package utilization by R sessions when
-#' the \code{\link[base]{library}} function is called to load packages.  When
+#' the \code{base::library} function is called to load packages.  When
 #' the \code{packagestats} package is loaded, the \code{\link{library}}
-#' function overloads the \code{\link[base]{library}} function so that the
+#' function overloads the \code{base::library} function so that the
 #' name of the loaded package and other identifying information can be recorded
-#' in a log file once the \code{\link[base]{library}} function returns
+#' in a log file once the \code{base::library} function returns
 #' successfully.  A single log file in CSV format is created for the R session
 #' during the first call to \code{library} or \code{require}.  Each time a
 #' package is loaded, the log file is appended with the identifying information
 #' of the package and R session.  The identifying information written to each
 #' line of the log file is:
-#' \enumerate{
-#'   \item the name of the R script file as returned by
+#' \describe{
+#'   \item{ScriptFile}{the name of the R script file as returned by
 #'      \code{\link[base]{commandArgs}} under the \code{--file} option, or the
-#'      empty string if the session is interactive
-#'   \item the version of the R programming environment
-#'   \item the name of the package loaded
-#'   \item the version of the package loaded
-#'   \item the user's login name as returned by \code{\link[base]{Sys.info}}
-#'   \item the real name of the user as returned by \code{\link[base]{Sys.info}}
-#'   \item the name of the effective user as returned by \code{\link[base]{Sys.info}}
+#'      empty string if the session is interactive}
+#'   \item{RVersion}{the version of the R programming environment}
+#'   \item{PackageName}{the name of the package loaded}
+#'   \item{PackageVersion}{the version of the package loaded}
+#'   \item{UserLogin}{the user's login name as returned by \code{\link[base]{Sys.info}}}
+#'   \item{UserName}{the real name of the user as returned by \code{\link[base]{Sys.info}}}
+#'   \item{EffectiveUser}{the name of the effective user as returned by \code{\link[base]{Sys.info}}}
 #' }
 #' The log file will be in the directory specified by the option
 #' \code{package.stats.logDirectory} and have the format
@@ -117,27 +117,29 @@ function(package, help, pos = 2, lib.loc = NULL, character.only = FALSE,
 #' Performs logging of package utilization by the base::require function
 #'
 #' \code{require} performs logging of package utilization by R sessions when
-#' the \code{\link[base]{require}} function is called
+#' the \code{base::require} function is called
 #'
 #' This function performs logging of package utilization by R sessions when
-#' the \code{\link[base]{require}} function is called to load packages.  When
+#' the \code{base::require} function is called to load packages.  When
 #' the \code{packagestats} package is loaded, the \code{\link{require}}
-#' function overloads the \code{\link[base]{require}} function so that the
+#' function overloads the \code{base::require} function so that the
 #' name of the loaded package and other identifying information can be recorded
-#' in a log file once the \code{\link[base]{require}} function returns
+#' in a log file once the \code{base::require} function returns
 #' successfully.  A single log file in CSV format is created for the R session
 #' during the first call to \code{require} or \code{library} functions.  Each
 #' time a package is loaded, the log file is appended with the identifying
 #' information of the package and R session.  The identifying information
 #' written to each line of the log file is:
-#' \enumerate{
-#'   \item the name of the R script file as returned by \code{\link[base]{commandArgs}} under the \code{--file} option, or the empty string if the session is interactive
-#'   \item the version of the R programming environment
-#'   \item the name of the package loaded
-#'   \item the version of the package loaded
-#'   \item the user's login name as returned by \code{\link[base]{Sys.info}}
-#'   \item the real name of the user as returned by \code{\link[base]{Sys.info}}
-#'   \item the name of the effective user as returned by \code{\link[base]{Sys.info}}
+#' \describe{
+#'   \item{ScriptFile}{the name of the R script file as returned by
+#'      \code{\link[base]{commandArgs}} under the \code{--file} option, or the
+#'      empty string if the session is interactive}
+#'   \item{RVersion}{the version of the R programming environment}
+#'   \item{PackageName}{the name of the package loaded}
+#'   \item{PackageVersion}{the version of the package loaded}
+#'   \item{UserLogin}{the user's login name as returned by \code{\link[base]{Sys.info}}}
+#'   \item{UserName}{the real name of the user as returned by \code{\link[base]{Sys.info}}}
+#'   \item{EffectiveUser}{the name of the effective user as returned by \code{\link[base]{Sys.info}}}
 #' }
 #' The log file will be in the directory specified by the option
 #' \code{package.stats.logDirectory} and have the format
@@ -175,16 +177,16 @@ function(package, lib.loc = NULL, quietly = FALSE, warn.conflicts = TRUE,
 #' Retrieves and appends package and R session identifying information to a log
 #' file for saving this information.  The identifying information written to
 #' each line of the log file is:
-#' \enumerate{
-#'   \item the name of the R script file as returned by
+#' \describe{
+#'   \item{ScriptFile}{the name of the R script file as returned by
 #'      \code{\link[base]{commandArgs}} under the \code{--file} option, or the
-#'      empty string if the session is interactive
-#'   \item the version of the R programming environment
-#'   \item the name of the package loaded
-#'   \item the version of the package loaded
-#'   \item the user's login name as returned by \code{\link[base]{Sys.info}}
-#'   \item the real name of the user as returned by \code{\link[base]{Sys.info}}
-#'   \item the name of the effective user as returned by \code{\link[base]{Sys.info}}
+#'      empty string if the session is interactive}
+#'   \item{RVersion}{the version of the R programming environment}
+#'   \item{PackageName}{the name of the package loaded}
+#'   \item{PackageVersion}{the version of the package loaded}
+#'   \item{UserLogin}{the user's login name as returned by \code{\link[base]{Sys.info}}}
+#'   \item{UserName}{the real name of the user as returned by \code{\link[base]{Sys.info}}}
+#'   \item{EffectiveUser}{the name of the effective user as returned by \code{\link[base]{Sys.info}}}
 #' }
 #' The log file will be in the directory specified by the option
 #' \code{package.stats.logDirectory} and have the format
@@ -209,7 +211,7 @@ function(pkgName, pkgVersion) {
    logFilePrefix <- getOption(logFilePrefixOption)
    logDirectory <- getOption(logDirOption)
    cat(sprintf("logDirectory: %s\n", logDirectory))
-   csvLabels <- "ScriptFile,R Version,PackageName,PackageVersion,UserLogin,UserName,EffectiveUser\n"
+   csvLabels <- "ScriptFile,RVersion,PackageName,PackageVersion,UserLogin,UserName,EffectiveUser\n"
 
    # Make sure needed options are set
    if (is.null(getOption(enableCollectionOption))) {
@@ -231,14 +233,35 @@ function(pkgName, pkgVersion) {
    }
 
    # If statistics collection is still active,
-   # collect the needed information and save it to a log file.
+   # collect the needed information and save it to a log file or
+   # pass it to XALT.
    if (getOption(enableCollectionOption) == TRUE) {
+      # Call Sys.info to get user stats
+      # If running Rscript, how do we get the top level R script?
+      # need to append to process id file
+
+      systemInfo <- Sys.info()
+      processId <- Sys.getpid()
+
+      argList <- commandArgs(trailingOnly=FALSE) 
+
+      scriptFile <- ""
+
+      # Find the name of the script file
+      for (a in argList) {
+         if (grepl("--file=", a)) {
+            scriptFile <- substr(a, 8, nchar(a)) 
+         }
+      }
+
+      # Get the R version
+      rVersion <- paste(R.version$major, R.version$minor, sep=".")
       method <- getOption(methodOption)
 
       if (method == "log") {
-         logDirectory <- getOption(logDirOption)
-         writeCsvLogFile(ownPackageName, pkgName, pkgVersion,
-            logFilePrefixOption, logDirOption, csvLabels)
+         writeCsvLogFile(ownPackageName, scriptFile, rVersion, pkgName,
+            pkgVersion, systemInfo, logFilePrefixOption, logDirOption,
+            processId, csvLabels)
       } else if (method == "xalt") {
          # If the XALT_RUN_UUID is set, then tracking is enabled.
          # XALT_EXECUTABLE_TRACKING should NOT be examined for this purpose.
@@ -250,9 +273,45 @@ function(pkgName, pkgVersion) {
 }
 
 
+#' Writes package utilization information to a file in comma-separated value
+#' (CSV) format.
+#'
+#' \code{writeCsvLogFile} performs logging of package utilization to a CSV log
+#' file
+#'
+#' This function writes package utilization information to a file in
+#' comma-separated value format.  The values currently saved to the CSV file
+#' are the following:
+#' \describe{
+#'   \item{ScriptFile}{the name of the R script file as returned by
+#'      \code{\link[base]{commandArgs}} under the \code{--file} option, or the
+#'      empty string if the session is interactive}
+#'   \item{RVersion}{the version of the R programming environment}
+#'   \item{PackageName}{the name of the package loaded}
+#'   \item{PackageVersion}{the version of the package loaded}
+#'   \item{UserLogin}{the user's login name as returned by \code{\link[base]{Sys.info}}}
+#'   \item{UserName}{the real name of the user as returned by \code{\link[base]{Sys.info}}}
+#'   \item{EffectiveUser}{the name of the effective user as returned by \code{\link[base]{Sys.info}}}
+#' }
+#'
+#' @param ownPackageName the name of the package this function is a member of
+#' @param scriptFile the name of the script file executed by Rscript or the
+#'   empty string if R is being run interactively
+#' @param rVersion the version of the R programming environment
+#' @param pkgName the name of the package that was loaded with a call to
+#'    \code{\link[base]{library}} or \code{\link[base]{require}}
+#' @param pkgVersion the version of the package that was loaded with a call to
+#'    \code{\link[base]{library}} or \code{\link[base]{require}}
+#' @param systemInfo the system information return by a call to
+#'    \code{\link[base]{Sys.info}}
+#' @param logFilePrefixOption the value of the option containing the log file
+#'    prefix that will appear in the log file name
+#' @param logDirOption the value of the option containing the log directory
+#' @param processId the process ID of the R programming environment
+#' @param csvLabels the labels for each entry in the CSV log file
 writeCsvLogFile <-
-function(ownPackageName, pkgName, pkgVersion, logDirOption, logFilePrefixOption,
-   csvLabels) {
+function(ownPackageName, scriptFile, rVersion, pkgName, pkgVersion,
+        systemInfo, logFilePrefixOption, logDirOption, processId, csvLabels) {
    logDirectory <- getOption(logDirOption)
 
    # Check if the logging directory exists.
@@ -261,15 +320,7 @@ function(ownPackageName, pkgName, pkgVersion, logDirOption, logFilePrefixOption,
       warning(sprintf("%s: Option %s is not set.  Disabling package utilization statistics for this session.", ownPackageName, logDirOption))
       options(package.stats.enabled = FALSE)
    } else {
-   
-      # Call Sys.info to get user stats
-      # If running Rscript, how do we get the top level R script?
-      # need to append to process id file
-
-      systemInfo <- Sys.info()
-      processId <- Sys.getpid()
       logFilePrefix <- getOption(logFilePrefixOption)
-      
       tempFileName <- paste(logFilePrefix,
          systemInfo[["nodename"]], processId, sep="_")
       tempFilePath <- file.path(logDirectory, tempFileName)
@@ -297,20 +348,6 @@ function(ownPackageName, pkgName, pkgVersion, logDirOption, logFilePrefixOption,
       # If the file exists, write the needed information to the session
       # log file. 
       if (fileExists) {
-         argList <- commandArgs(trailingOnly=FALSE) 
-
-         scriptFile <- ""
-
-         # Find the name of the script file
-         for (a in argList) {
-            if (grepl("--file=", a)) {
-               scriptFile <- substr(a, 8, nchar(a)) 
-            }
-         }
-
-         # Get the R version
-         rVersion <- paste(R.version$major, R.version$minor, sep=".")
-
          sep <- c(",", ",", ",", ",", ",", ",", "")
          cat(scriptFile, rVersion, pkgName, pkgVersion,
             systemInfo[["login"]], systemInfo[["user"]],
