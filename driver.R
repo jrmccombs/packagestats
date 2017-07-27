@@ -20,7 +20,6 @@
 # vignettes tarred and compressed R package.
 library(devtools)
 
-packagePath <- file.path(getwd(), "packagestats")
-devtools::document("packagestats")
-devtools::check_built(packagePath, run_dont_test=TRUE)
-readline(prompt="Press [ENTER] to continue")
+devtools::load_all("/Users/jmccombs/projects/RWorkflowOptimization/source/library_overlay/packagestats")
+
+library(cluster)

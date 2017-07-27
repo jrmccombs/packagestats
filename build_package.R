@@ -14,13 +14,9 @@
 # limitations under the License.
 ################################################################################
 
-# Run this script to generate/update the man pages from the roxygen
-# comments, update the namespaces, and to perform validation checks on the
-# package.  Use the generate_benchmark_package.R script to generate the 
-# vignettes tarred and compressed R package.
+# Use this script to build the R package.
 library(devtools)
 
 packagePath <- file.path(getwd(), "packagestats")
-devtools::document("packagestats")
-devtools::check_built(packagePath, run_dont_test=TRUE)
+devtools::build(packagePath)
 readline(prompt="Press [ENTER] to continue")

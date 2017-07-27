@@ -7,6 +7,9 @@ Authors@R: person("James", "McCombs", email = "jmccombs@iu.edu", role = c("aut",
 Description: Overloads library() and require() functions to collect statistics
   on libraries loaded by user applications.
 Depends: R (>= 3.3.1)
+Imports:
+  utils,
+  methods
 License: Apache License 2.0 | file LICENSE
 Encoding: UTF-8
 LazyData: true
