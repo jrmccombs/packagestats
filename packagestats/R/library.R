@@ -38,8 +38,10 @@
 #'   \item{PackageName}{the name of the package loaded}
 #'   \item{PackageVersion}{the version of the package loaded}
 #'   \item{UserLogin}{the user's login name as returned by \code{\link[base]{Sys.info}}}
-#'   \item{UserName}{the real name of the user as returned by \code{\link[base]{Sys.info}}}
-#'   \item{EffectiveUser}{the name of the effective user as returned by \code{\link[base]{Sys.info}}}
+#'   \item{UserName}{the real name of the user as returned by
+#'      \code{\link[base]{Sys.info}}}
+#'   \item{EffectiveUser}{the name of the effective user as returned by
+#'      \code{\link[base]{Sys.info}}}
 #' }
 #' The log file will be in the directory specified by the option
 #' \code{package.stats.logDirectory} and have the format
@@ -83,9 +85,8 @@ function(package, help, pos = 2, lib.loc = NULL, character.only = FALSE,
       }
 
       # Save the statistics to a session log file
-      pkgVersion <- toString(utils::packageVersion(package))
       print("calling collectStatistics")
-      collectStatistics(package, pkgVersion)
+      collectStatistics(package)
       print("after collectStatistics")
    } else if (!missing(help)) {
       if (!character.only) {
@@ -161,8 +162,7 @@ function(package, lib.loc = NULL, quietly = FALSE, warn.conflicts = TRUE,
    r <- base::require(package=package, lib.loc=lib.loc, quietly=quietly,
            warn.conflicts=warn.conflicts, character.only=TRUE)
 
-   pkgVersion <- toString(utils::packageVersion(package))
-   collectStatistics(package, pkgVersion)
+   collectStatistics(package)
 
    invisible(r)
 }
@@ -184,9 +184,12 @@ function(package, lib.loc = NULL, quietly = FALSE, warn.conflicts = TRUE,
 #'   \item{RVersion}{the version of the R programming environment}
 #'   \item{PackageName}{the name of the package loaded}
 #'   \item{PackageVersion}{the version of the package loaded}
-#'   \item{UserLogin}{the user's login name as returned by \code{\link[base]{Sys.info}}}
-#'   \item{UserName}{the real name of the user as returned by \code{\link[base]{Sys.info}}}
-#'   \item{EffectiveUser}{the name of the effective user as returned by \code{\link[base]{Sys.info}}}
+#'   \item{UserLogin}{the user's login name as returned by
+#'      \code{\link[base]{Sys.info}}}
+#'   \item{UserName}{the real name of the user as returned by
+#'      \code{\link[base]{Sys.info}}}
+#'   \item{EffectiveUser}{the name of the effective user as returned by
+#'      \code{\link[base]{Sys.info}}}
 #' }
 #' The log file will be in the directory specified by the option
 #' \code{package.stats.logDirectory} and have the format
@@ -197,45 +200,82 @@ function(package, lib.loc = NULL, quietly = FALSE, warn.conflicts = TRUE,
 #'
 #' @param pkgName the name of the package that was loaded with a call to
 #'    \code{\link[base]{library}} or \code{\link[base]{require}}
-#' @param pkgVersion the version of the package that was loaded with a call to
-#'    \code{\link[base]{library}} or \code{\link[base]{require}}
 #' 
 collectStatistics <-
-function(pkgName, pkgVersion) {
+function(pkgName) {
 
+   pkgVersion <- toString(utils::packageVersion(pkgName))
    ownPackageName <- methods::getPackageName()
+   packageEnvPath <- paste("package:", ownPackageName, sep="")
+   packageEnv <- as.environment(packageEnvPath)
    enableCollectionOption <- "package.stats.enabled"
    methodOption <- "package.stats.method"
+   filterListOption <- "package.stats.filter"
    logDirOption <- "package.stats.logDirectory"
    logFilePrefixOption <- "package.stats.logFilePrefix"
-   logFilePrefix <- getOption(logFilePrefixOption)
-   logDirectory <- getOption(logDirOption)
-   cat(sprintf("logDirectory: %s\n", logDirectory))
    csvLabels <- "ScriptFile,RVersion,PackageName,PackageVersion,UserLogin,UserName,EffectiveUser\n"
+
+   filterList <- getOption(filterListOption)
 
    # Make sure needed options are set
    if (is.null(getOption(enableCollectionOption))) {
       stop(sprintf("%s: Option `%s` must be set to TRUE or FALSE",
          ownPackageName, enableCollectionOption))
-   } else if (is.null(logFilePrefix) || is.null(logDirectory)) {
-      warning(sprintf("%s: Options `%s` and `%s` must be set to enable package utilization statistics",
-         ownPackageName, logFilePrefix, logDirectory))
-      # Deactivate package statistics collection
-      options(package.stats.enabled = FALSE)
-   } else {
-      # Check existence of logging directory
-      if (!dir.exists(logDirectory)) {
-         warning(sprintf("%s: Package utilization statistics logging directory '%s' is not found.  Disabling package utilization statistics for this session.", ownPackageName, logDirectory))
+   } else if (!(pkgName %in% filterList) &&
+               (getOption(enableCollectionOption) == TRUE)) {
 
-         # Deactivate package statistics collection
-         options(package.stats.enabled = FALSE)
+      # Check if data frame of loaded packages has been created.
+      # Following works same as below
+      #if (!exists("package.stats.packageFrame", envir=packageEnv)) {
+      if (!exists("package.stats.packageFrame")) {
+         print("assigning package.stats.packageFrame")
+         cat(sprintf("packageEnvPath: %s\n", packageEnvPath))
+         assign("package.stats.packageFrame", 
+            data.frame(PackageName=character(), PackageVersion=character(),
+               stringsAsFactors=FALSE),
+            envir = packageEnv)
+         packageFrame <- get("package.stats.packageFrame",
+            envir = packageEnv)
+         #package.stats.packageFrame[nrow(package.stats.packageFrame)+1, ] <-
+         #   list(pkgName, pkgVersion)
+         packageFrame[nrow(packageFrame)+1, ] <-
+            list(pkgName, pkgVersion)
+         assign("package.stats.packageFrame", 
+            packageFrame,
+            envir = packageEnv)
+         str(package.stats.packageFrame)
+         #packageFrame[nrow(packageFrame)+1, ] <- list(pkgName, pkgVersion)
+         cat(sprintf("nrow: %d\n", nrow(package.stats.packageFrame)))
+         #print(ls())
+      } else {
+         print("package.stats.packageFrame already created")
+
+         indices <- which(package.stats.packageFrame$PackageName == pkgName &
+            package.stats.packageFrame$PackageVersion == pkgVersion)
+
+         if (length(indices) == 0) {
+            print("length(indices) == 0")
+            cat(sprintf("nrow: %d\n", nrow(package.stats.packageFrame)))
+            #package.stats.packageFrame[nrow(package.stats.packageFrame)+1, ] <-
+            #   list(pkgName, pkgVersion)
+            packageFrame <- get("package.stats.packageFrame",
+               envir = packageEnv)
+            packageFrame[nrow(packageFrame)+1, ] <-
+               list(pkgName, pkgVersion)
+            assign("package.stats.packageFrame", 
+               packageFrame,
+               envir = packageEnv)
+         }
+
+         str(package.stats.packageFrame)
+         cat(sprintf("nrow: %d\n", nrow(package.stats.packageFrame)))
       }
-   }
+   
 
-   # If statistics collection is still active,
-   # collect the needed information and save it to a log file or
-   # pass it to XALT.
-   if (getOption(enableCollectionOption) == TRUE) {
+      # If statistics collection is still active,
+      # collect the needed information and save it to a log file or
+      # pass it to XALT.
+
       # Call Sys.info to get user stats
       # If running Rscript, how do we get the top level R script?
       # need to append to process id file
@@ -266,6 +306,7 @@ function(pkgName, pkgVersion) {
          # If the XALT_RUN_UUID is set, then tracking is enabled.
          # XALT_EXECUTABLE_TRACKING should NOT be examined for this purpose.
          run_uuid <- Sys.getenv("XALT_RUN_UUID")
+         # Insert call to XALT API here
       }
    }
 
@@ -313,16 +354,24 @@ writeCsvLogFile <-
 function(ownPackageName, scriptFile, rVersion, pkgName, pkgVersion,
         systemInfo, logFilePrefixOption, logDirOption, processId, csvLabels) {
    logDirectory <- getOption(logDirOption)
+   logFilePrefix <- getOption(logFilePrefixOption)
 
    # Check if the logging directory exists.
    # If not, disable the statistics collection.
-   if (is.null(logDirectory)) {
-      warning(sprintf("%s: Option %s is not set.  Disabling package utilization statistics for this session.", ownPackageName, logDirOption))
+   if (is.null(logFilePrefix) || is.null(logDirectory)) {
+      warning(sprintf("%s: Options `%s` and `%s` must be set to enable logging package utilization statistics",
+         ownPackageName, logFilePrefix, logDirectory))
+      # Deactivate package statistics collection
+      options(package.stats.enabled = FALSE)
+      # Check existence of logging directory
+   } else if (!dir.exists(logDirectory)) {
+      warning(sprintf("%s: Package utilization statistics logging directory '%s' is not found.  Disabling package utilization statistics for this session.", ownPackageName, logDirectory))
+
+      # Deactivate package statistics collection
       options(package.stats.enabled = FALSE)
    } else {
-      logFilePrefix <- getOption(logFilePrefixOption)
-      tempFileName <- paste(logFilePrefix,
-         systemInfo[["nodename"]], processId, sep="_")
+      tempFileName <- paste(logFilePrefix, systemInfo[["nodename"]], processId,
+         sep="_")
       tempFilePath <- file.path(logDirectory, tempFileName)
 
       fileExists <- file.exists(tempFilePath)

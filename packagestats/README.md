@@ -2,7 +2,7 @@
 The `packagestats` package collects package utilization statistics on packages
 loaded using the `base::library` and `base::require` functions.  The package
 works by overlaying the `base::library` and `base:require` functions with
-identically named functions with the same function definitions which.  These
+identically named functions with the same function definitions.  These
 overlay functions save the names of the packages and other identifying
 information to a session log file uniquely associated with the instance of the
 R programming environment.
