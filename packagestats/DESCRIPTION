@@ -1,12 +1,12 @@
 Package: packagestats
-Title: Overloaded Library and Require Functions for Collecting Package Usage Statistics
+Title: Functions for Collecting Package Usage Statistics
 Version: 0.0.0.9000
 Author: James McCombs [aut, cre]
 Maintainer: James McCombs <jmccombs@iu.edu>
 Authors@R: person("James", "McCombs", email = "jmccombs@iu.edu", role = c("aut", "cre"))
-Description: Overloads library() and require() functions to collect statistics
-  on libraries loaded by user applications.
-Depends: R (>= 3.3.1)
+Description: Overloads library(), require(), and :: operator functions to
+  collect statistics on libraries loaded by user applications.
+Depends: R (>= 3.4.0)
 Imports:
   utils,
   methods

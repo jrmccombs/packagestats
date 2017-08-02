@@ -1,9 +1,9 @@
 #' packagestats: A package for collecting package utilization statistics for
-#' packages loaded using the \code{base::library} and \code{base::require}
-#' functions.
+#' packages loaded using the \code{library}, \code{require}, and namespace
+#' operators.
 #'
-#' The package works by overlaying the `base::library` and `base:require`
-#' functions with identically named functions with the same function
+#' The package works by overlaying the `base::library`, `base:require`, and
+#' `::` functions with identically named functions with the same function
 #' definitions.  These overlay functions save the names of the packages and
 #' other identifying information to a session log file uniquely associated with
 #' the instance of the R programming environment.
@@ -14,6 +14,9 @@
 #'      records the package name, version, and other information for regarding
 #'      package utilization}
 #'    \item{\code{\link{require}}}{Calls the \code{base::require} function and
+#'      records the package name, version, and other information for regarding
+#'      package utilization}
+#'    \item{\code{::}}{Calls the \code{base::'::'} function and 
 #'      records the package name, version, and other information for regarding
 #'      package utilization}
 #' }

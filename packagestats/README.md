@@ -70,7 +70,7 @@ strings specifying packages that are to be exempted from utilization tracking, o
 Also, packages loaded by default by the R programming environment upon
 initialization, are not currently tracked by the `packagestats` package.  This is
 because those packages are loaded before `packagestats`.  However,
-packages referenced using the `::` operator during function calles cause logging
+packages referenced using the `::` operator during function calls cause logging
 of the associated package (if not a member of the filter list) because that
 operator is overloaded to perform logging with `packagestats`.
 
