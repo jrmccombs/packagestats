@@ -23,3 +23,8 @@ library(devtools)
 devtools::load_all("/Users/jmccombs/projects/RWorkflowOptimization/source/library_overlay/packagestats")
 
 library(cluster)
+
+x <- rbind(cbind(rnorm(10,0,0.5), rnorm(10,0,0.5)),
+           cbind(rnorm(15,5,0.5), rnorm(15,5,0.5)))
+pamx <- cluster::pam(x, 2)
+
