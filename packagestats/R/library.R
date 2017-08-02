@@ -48,7 +48,6 @@ function(package, help, pos = 2, lib.loc = NULL, character.only = FALSE,
 
       # If the help parameter is missing, then the package is to be loaded
       if (missing(help)) {
-         print("Calling base::library 1")
          r <- base::library(package=package, pos=pos, lib.loc=lib.loc,
                  character.only=TRUE, logical.return=logical.return,
 		 warn.conflicts=warn.conflicts, quietly=quietly,
@@ -56,7 +55,6 @@ function(package, help, pos = 2, lib.loc = NULL, character.only = FALSE,
       } else {
          # This case occurs when the package and the help parameters
          # are both provided.
-         print("Calling base::library 2")
          r <- base::library(package=package, help=help, pos=pos,
                  lib.loc=lib.loc, character.only=TRUE,
                  logical.return=logical.return, warn.conflicts=warn.conflicts,
@@ -64,22 +62,18 @@ function(package, help, pos = 2, lib.loc = NULL, character.only = FALSE,
       }
 
       # Save the statistics to a session log file
-      print("calling collectStatistics")
       collectStatistics(package)
-      print("after collectStatistics")
    } else if (!missing(help)) {
       if (!character.only) {
          help <- as.character(substitute(help))
       }
 
-      print("Calling base::library 3")
       r <- base::library(help=help, pos=pos, lib.loc=lib.loc,
                     character.only=TRUE, logical.return=logical.return,
                     warn.conflicts=warn.conflicts, quietly=quietly,
                     verbose=verbose)
       return(r)
    } else {
-      print("Calling base::library 4")
       r <- base::library(pos=pos, lib.loc=lib.loc,
          character.only=character.only, logical.return=logical.return,
          warn.conflicts=warn.conflicts, quietly=quietly, verbose=verbose)
