@@ -14,6 +14,9 @@
 # limitations under the License.
 ################################################################################
 
+package.stats.packageFrame <- data.frame(PackageName=character(),
+   PackageVersion=character(), stringsAsFactors=FALSE)
+
 #' place imports here if needed
 #assign("package.stats.packageFrame",
 #   data.frame(PackageName=character(), PackageVersion=character(),

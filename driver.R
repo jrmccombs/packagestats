@@ -20,11 +20,34 @@
 # vignettes tarred and compressed R package.
 library(devtools)
 
-devtools::load_all("/Users/jmccombs/projects/RWorkflowOptimization/source/library_overlay/packagestats")
+devtools::load_all("/Users/jmccombs/projects/RWorkflowOptimization/source/library_overlay/packagestats", export_all=FALSE)
 
+myEnv <- as.environment("package:packagestats")
+print("ls():")
+ls()
+print("ls(envir=myEnv):")
+ls(envir=myEnv)
 library(cluster)
+library(stats)
+print("ls():")
+ls()
+print("ls(envir=myEnv):")
+ls(envir=myEnv)
 
-x <- rbind(cbind(rnorm(10,0,0.5), rnorm(10,0,0.5)),
-           cbind(rnorm(15,5,0.5), rnorm(15,5,0.5)))
-pamx <- cluster::pam(x, 2)
+#print("str of package.stats.packageFrame")
+
+#p <- get("package.stats.packageFrame", envir=myEnv)
+#print("str of p")
+#str(p)
+
+#collectStatistics("cluster")
+#print("after collectStatistics")
+#p <- get("package.stats.packageFrame", envir=myEnv)
+#print("str of p")
+#str(p)
+
+
+#x <- rbind(cbind(rnorm(10,0,0.5), rnorm(10,0,0.5)),
+#           cbind(rnorm(15,5,0.5), rnorm(15,5,0.5)))
+#pamx <- cluster::pam(x, 2)
 

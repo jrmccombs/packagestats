@@ -156,7 +156,7 @@ function(pkgName) {
 
    pkgVersion <- toString(utils:::packageVersion(pkgName))
    ownPackageName <- methods:::getPackageName()
-   packageEnvPath <- paste("package:", ownPackageName, sep="")
+   packageEnvPath <- paste("package", ownPackageName, sep=":")
    packageEnv <- as.environment(packageEnvPath)
    enableCollectionOption <- "package.stats.enabled"
    methodOption <- "package.stats.method"
@@ -167,6 +167,7 @@ function(pkgName) {
 
    filterList <- getOption(filterListOption)
 
+
    # Make sure needed options are set
    if (is.null(getOption(enableCollectionOption))) {
       stop(sprintf("%s: Option `%s` must be set to TRUE or FALSE",
@@ -174,52 +175,22 @@ function(pkgName) {
    } else if (!(pkgName %in% filterList) &&
                (getOption(enableCollectionOption) == TRUE)) {
 
-      # Check if data frame of loaded packages has been created.
-      # Following works same as below
-      #if (!exists("package.stats.packageFrame", envir=packageEnv)) {
-      if (!exists("package.stats.packageFrame")) {
-         print("assigning package.stats.packageFrame")
-         cat(sprintf("packageEnvPath: %s\n", packageEnvPath))
-         assign("package.stats.packageFrame", 
-            data.frame(PackageName=character(), PackageVersion=character(),
-               stringsAsFactors=FALSE),
-            envir = packageEnv)
-         packageFrame <- get("package.stats.packageFrame",
-            envir = packageEnv)
-         #package.stats.packageFrame[nrow(package.stats.packageFrame)+1, ] <-
-         #   list(pkgName, pkgVersion)
+      packageFrame <- getFromNamespace("package.stats.packageFrame",
+         "packagestats")
+      indices <- which(packageFrame$PackageName == pkgName &
+         packageFrame$PackageVersion == pkgVersion)
+
+      if (length(indices) == 0) {
+         print("length(indices) == 0, no match, adding new entry")
          packageFrame[nrow(packageFrame)+1, ] <-
             list(pkgName, pkgVersion)
-         assign("package.stats.packageFrame", 
-            packageFrame,
-            envir = packageEnv)
-         str(package.stats.packageFrame)
-         #packageFrame[nrow(packageFrame)+1, ] <- list(pkgName, pkgVersion)
-         cat(sprintf("nrow: %d\n", nrow(package.stats.packageFrame)))
-         #print(ls())
-      } else {
-         print("package.stats.packageFrame already created")
-
-         indices <- which(package.stats.packageFrame$PackageName == pkgName &
-            package.stats.packageFrame$PackageVersion == pkgVersion)
-
-         if (length(indices) == 0) {
-            print("length(indices) == 0")
-            cat(sprintf("nrow: %d\n", nrow(package.stats.packageFrame)))
-            #package.stats.packageFrame[nrow(package.stats.packageFrame)+1, ] <-
-            #   list(pkgName, pkgVersion)
-            packageFrame <- get("package.stats.packageFrame",
-               envir = packageEnv)
-            packageFrame[nrow(packageFrame)+1, ] <-
-               list(pkgName, pkgVersion)
-            assign("package.stats.packageFrame", 
-               packageFrame,
-               envir = packageEnv)
-         }
-
-         str(package.stats.packageFrame)
-         cat(sprintf("nrow: %d\n", nrow(package.stats.packageFrame)))
+         assignInMyNamespace("package.stats.packageFrame", packageFrame)
       }
+
+      # Print debug info here   
+      packageFrame<-getFromNamespace("package.stats.packageFrame", "packagestats")
+      print("package.stats.packageFrame after assign")
+      str(packageFrame)
    
 
       # If statistics collection is still active,
