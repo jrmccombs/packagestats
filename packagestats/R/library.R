@@ -61,8 +61,15 @@ function(package, help, pos = 2, lib.loc = NULL, character.only = FALSE,
                  quietly=quietly, verbose)
       }
 
+      packagePath <- tryCatch({
+         pkgPath <- find.package(package=package) 
+         pkgPath
+      }, error = function(err) {
+         return("")
+      })
+      
       # Save the statistics to a session log file
-      collectStatistics(package)
+      collectStatistics(package, packagePath)
    } else if (!missing(help)) {
       if (!character.only) {
          help <- as.character(substitute(help))
@@ -116,7 +123,14 @@ function(package, lib.loc = NULL, quietly = FALSE, warn.conflicts = TRUE,
    r <- base::require(package=package, lib.loc=lib.loc, quietly=quietly,
            warn.conflicts=warn.conflicts, character.only=TRUE)
 
-   collectStatistics(package)
+   packagePath <- tryCatch({
+      pkgPath <- find.package(package=package) 
+      pkgPath
+   }, error = function(err) {
+      return("")
+   })
+      
+   collectStatistics(package, packagePath)
    invisible(r)
 }
 
@@ -138,7 +152,14 @@ function(package, lib.loc = NULL, quietly = FALSE, warn.conflicts = TRUE,
 `::` <- function(pkg, name) {
    pkg <- as.character(substitute(pkg))
    name <- as.character(substitute(name))
-   collectStatistics(pkg)
+
+   pkgPath <- tryCatch({
+      find.package(package=pkg) 
+   }, error = function(err) {
+      return("")
+   })
+ 
+   collectStatistics(pkg, pkgPath)
    getExportedValue(pkg, name)   
 }
 
@@ -150,9 +171,11 @@ function(package, lib.loc = NULL, quietly = FALSE, warn.conflicts = TRUE,
 #'
 #' @param pkgName the name of the package that was loaded with a call to
 #'    \code{\link[base]{library}} or \code{\link[base]{require}}
+#' @param pkgPath the full path of the package that was loaded with a call to
+#'    \code{\link[base]{library}} or \code{\link[base]{require}}
 #' @export
 collectStatistics <-
-function(pkgName) {
+function(pkgName, pkgPath) {
 
    pkgVersion <- toString(utils:::packageVersion(pkgName))
    ownPackageName <- methods:::getPackageName()
@@ -163,7 +186,7 @@ function(pkgName) {
    filterListOption <- "package.stats.filter"
    logDirOption <- "package.stats.logDirectory"
    logFilePrefixOption <- "package.stats.logFilePrefix"
-   csvLabels <- "ScriptFile,RVersion,PackageName,PackageVersion,UserLogin,UserName,EffectiveUser\n"
+   csvLabels <- "ScriptFile,RVersion,PackageName,PackagePath,PackageVersion,UserLogin,UserName,EffectiveUser\n"
 
    filterList <- getOption(filterListOption)
 
@@ -175,7 +198,7 @@ function(pkgName) {
    } else if (!(pkgName %in% filterList) &&
                (getOption(enableCollectionOption) == TRUE)) {
 
-      packageFrame <- getFromNamespace("package.stats.packageFrame",
+      packageFrame <- utils:::getFromNamespace("package.stats.packageFrame",
          "packagestats")
       indices <- which(packageFrame$PackageName == pkgName &
          packageFrame$PackageVersion == pkgVersion)
@@ -184,13 +207,13 @@ function(pkgName) {
          print("length(indices) == 0, no match, adding new entry")
          packageFrame[nrow(packageFrame)+1, ] <-
             list(pkgName, pkgVersion)
-         assignInMyNamespace("package.stats.packageFrame", packageFrame)
+         utils:::assignInMyNamespace("package.stats.packageFrame", packageFrame)
       }
 
       # Print debug info here   
-      packageFrame<-getFromNamespace("package.stats.packageFrame", "packagestats")
+      packageFrame<-utils:::getFromNamespace("package.stats.packageFrame", "packagestats")
       print("package.stats.packageFrame after assign")
-      str(packageFrame)
+      utils:::str(packageFrame)
    
 
       # If statistics collection is still active,
@@ -218,7 +241,7 @@ function(pkgName) {
 
       if (method == "csvfile") {
          writeCsvLogFile(ownPackageName, scriptFile, rVersion, pkgName,
-            pkgVersion, systemInfo, logFilePrefixOption, logDirOption,
+            pkgPath, pkgVersion, systemInfo, logFilePrefixOption, logDirOption,
             processId, csvLabels)
       } else if (method == "xalt") {
          # If the XALT_RUN_UUID is set, then tracking is enabled.
@@ -263,6 +286,8 @@ function(pkgName) {
 #' @param rVersion the version of the R programming environment
 #' @param pkgName the name of the package that was loaded with a call to
 #'    \code{\link[base]{library}} or \code{\link[base]{require}}
+#' @param pkgPath the path of the package that was loaded with a call to
+#'    \code{\link[base]{library}} or \code{\link[base]{require}}
 #' @param pkgVersion the version of the package that was loaded with a call to
 #'    \code{\link[base]{library}} or \code{\link[base]{require}}
 #' @param systemInfo the system information return by a call to
@@ -273,7 +298,7 @@ function(pkgName) {
 #' @param processId the process ID of the R programming environment
 #' @param csvLabels the labels for each entry in the CSV log file
 writeCsvLogFile <-
-function(ownPackageName, scriptFile, rVersion, pkgName, pkgVersion,
+function(ownPackageName, scriptFile, rVersion, pkgName, pkgPath, pkgVersion,
         systemInfo, logFilePrefixOption, logDirOption, processId, csvLabels) {
    logDirectory <- getOption(logDirOption)
    logFilePrefix <- getOption(logFilePrefixOption)
@@ -319,8 +344,9 @@ function(ownPackageName, scriptFile, rVersion, pkgName, pkgVersion,
       # If the file exists, write the needed information to the session
       # log file. 
       if (fileExists) {
-         sep <- c(",", ",", ",", ",", ",", ",", "")
-         cat(scriptFile, rVersion, pkgName, pkgVersion,
+         sep <- c(",", ",", ",", ",", ",", ",", ",", "")
+         cat(sprintf("writeCsvLogFile pkgPath: %s\n", pkgPath))
+         cat(scriptFile, rVersion, pkgName, pkgPath, pkgVersion,
             systemInfo[["login"]], systemInfo[["user"]],
             systemInfo[["effective_user"]], "\n", file=tempFilePath, sep=sep,
             append=TRUE)

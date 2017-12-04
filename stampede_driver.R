@@ -14,17 +14,12 @@
 # limitations under the License.
 ################################################################################
 
-# Run this script to generate/update the man pages from the roxygen
-# comments, update the namespaces, and to perform validation checks on the
-# package.  Use the generate_benchmark_package.R script to generate the 
-# vignettes tarred and compressed R package.
-library(devtools)
+library(packagestats)
 
-devtools::load_all("/Users/jmccombs/projects/RWorkflowOptimization/source/library_overlay/packagestats", export_all=FALSE)
-
-p <- options("defaultPackages")
-
-print(p)
+options(package.stats.method = "csvfile")
+options(package.stats.filter = c("base"))
+options(package.stats.logDirectory = "/Users/jmccombs/projects/RWorkflowOptimization/source/library_overlay/logs")
+options(package.stats.logFilePrefix = "rpkgstats")
 
 myEnv <- as.environment("package:packagestats")
 print("ls():")

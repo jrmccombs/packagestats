@@ -16,8 +16,7 @@
 
 # Run this script to generate/update the man pages from the roxygen
 # comments, update the namespaces, and to perform validation checks on the
-# package.  Use the generate_benchmark_package.R script to generate the 
-# vignettes tarred and compressed R package.
+# package.
 library(devtools)
 
 packagePath <- file.path(getwd(), "packagestats")
