@@ -17,9 +17,9 @@ functionality.
 
 So that users transparently use the `packagestats` functions, the `packagestats`
 package must be loaded by default.  To accomplish this, the `Rprofile.site`
-file should be modified to include `packagestats` as a package under the
-`defaultPackages` option.  The following code accomplishes this when placed in
-the site profile:
+file containing the site profile should be modified to include `packagestats`
+as a package under the `defaultPackages` option.  The following code
+accomplishes this when placed in the site profile:
 
 ```
 # Add packagestats to the list of default packages
@@ -29,15 +29,15 @@ defaultPackages <- c("packagestats", defaultpackages)
 options("defaultPackages" = defaultPackages)
 ```
 
-The package utilization can be written to a CSV log file or performed using the
-XALT utility.  Options for activating the statistics collection, setting the
-logging method, and specifying other logging options should be set in the
-`Rprofile.site` file common to all R installations.  All package options should
-be set in the `Rprofile.site` file.  The `package.stats.enabled` and
-`package.stats.method` options must be set to enable/disable the logging and
-select the logging method, respectively.  If the logging method is set to
-`csvfile`, then the `package.stats.logDirectory` must be set to the the
-directory where the CSV log files are to be saved and the
+The package utilization information can be written to a CSV log file or
+performed using the XALT utility.  Options for activating the statistics
+collection, setting the logging method, and specifying other logging options
+should be set in the `Rprofile.site` file common to all R installations.  All
+package options should be set in the `Rprofile.site` file.  The
+`package.stats.enabled` and `package.stats.method` options must be set to
+enable/disable the logging and select the logging method, respectively.  If the
+logging method is set to `csvfile`, then the `package.stats.logDirectory` must
+be set to the the directory where the CSV log files are to be saved and the
 `package.stats.logFilePrefix` option must also be set to a prefix string to be
 added to the log file name.  The following shows how to enable and configure
 collection of package utilization using CSV log files:
@@ -67,7 +67,7 @@ each R session:
 1. __EffectiveUser__ the name of the effective user as returned by
    `base::Sys.info`
 
-To utilize the XALT utility `package.stats.method` should be set to `xalt` and
+To utilize the XALT utility, `package.stats.method` should be set to `xalt` and
 the `package.stats.xalt_run_uuid_var`, `package.stats.xalt_dir_var`, and
 `package.stats.xalt_exec_path` options should be set.  The
 `package.stats.xalt_run_uuid_var` option specifies the XALT environment variable
@@ -88,8 +88,9 @@ options(package.stats.method = "xalt")
 options(package.stats.xalt_run_uuid_var = "XALT_RUN_UUID")
 # Set the directory path to the XALT installation being used
 options(package.stats.xalt_dir_var = "XALT_DIR")
-# Set the relative path to the 
+# Set the relative path to the XALT package logging utility
 options(package.stats.xalt_exec_path = "libexec/xalt_record_pkg")
+```
 
 A filter list option `package.stats.filter` should also be set to a vector of
 strings specifying packages that are to be exempted from utilization tracking,
