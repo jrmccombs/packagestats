@@ -1,6 +1,6 @@
 Package: packagestats
 Title: Functions for Collecting Package Usage Statistics
-Version: 0.0.0.9000
+Version: 0.0.1.0000
 Author: James McCombs [aut, cre]
 Maintainer: James McCombs <jmccombs@iu.edu>
 Authors@R: person("James", "McCombs", email = "jmccombs@iu.edu", role = c("aut", "cre"))

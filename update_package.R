@@ -14,6 +14,12 @@
 # limitations under the License.
 ################################################################################
 
+options(package.stats.enabled = TRUE)
+options(package.stats.method = "csvfile")
+options(package.stats.filter = c("base"))
+options(package.stats.logDirectory = "/Users/jmccombs/projects/RWorkflowOptimization/source/library_overlay/logs")
+options(package.stats.logFilePrefix = "rpkgstats")
+
 # Run this script to generate/update the man pages from the roxygen
 # comments, update the namespaces, and to perform validation checks on the
 # package.

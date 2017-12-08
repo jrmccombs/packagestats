@@ -67,8 +67,8 @@ function(package, help, pos = 2, lib.loc = NULL, character.only = FALSE,
       }, error = function(err) {
          return("")
       })
-      
-      # Save the statistics to a session log file
+
+      # Save the logging information
       collectStatistics(package, packagePath)
    } else if (!missing(help)) {
       if (!character.only) {
@@ -198,22 +198,24 @@ function(pkgName, pkgPath) {
    } else if (!(pkgName %in% filterList) &&
                (getOption(enableCollectionOption) == TRUE)) {
 
-      packageFrame <- utils:::getFromNamespace("package.stats.packageFrame",
-         "packagestats")
-      indices <- which(packageFrame$PackageName == pkgName &
-         packageFrame$PackageVersion == pkgVersion)
-
-      if (length(indices) == 0) {
-         print("length(indices) == 0, no match, adding new entry")
-         packageFrame[nrow(packageFrame)+1, ] <-
-            list(pkgName, pkgVersion)
-         utils:::assignInMyNamespace("package.stats.packageFrame", packageFrame)
-      }
-
-      # Print debug info here   
-      packageFrame<-utils:::getFromNamespace("package.stats.packageFrame", "packagestats")
-      print("package.stats.packageFrame after assign")
-      utils:::str(packageFrame)
+      # This section retains all packages loaded by the R application.
+      # Currently this is just used for debugging purposes.
+      #packageFrame <- utils:::getFromNamespace("package.stats.packageFrame",
+      #   "packagestats")
+      #indices <- which(packageFrame$PackageName == pkgName &
+      #   packageFrame$PackageVersion == pkgVersion)
+      #
+      #if (length(indices) == 0) {
+      #  #print("length(indices) == 0, no match, adding new entry")
+      #  packageFrame[nrow(packageFrame)+1, ] <-
+      #     list(pkgName, pkgVersion)
+      #  utils:::assignInMyNamespace("package.stats.packageFrame", packageFrame)
+      #}
+      #
+      ## Print debug info here   
+      #packageFrame <- utils:::getFromNamespace("package.stats.packageFrame", "packagestats")
+      ##print("package.stats.packageFrame after assign")
+      #utils:::str(packageFrame)
    
 
       # If statistics collection is still active,
@@ -244,10 +246,42 @@ function(pkgName, pkgPath) {
             pkgPath, pkgVersion, systemInfo, logFilePrefixOption, logDirOption,
             processId, csvLabels)
       } else if (method == "xalt") {
-         # If the XALT_RUN_UUID is set, then tracking is enabled.
-         # XALT_EXECUTABLE_TRACKING should NOT be examined for this purpose.
-         run_uuid <- Sys.getenv("XALT_RUN_UUID")
-         # Insert call to XALT API here
+ 
+         # Retrieve needed options relevant to XALT
+         xalt_run_uuid_var <- getOption("package.stats.xalt_run_uuid_var")
+         xalt_dir_var <- getOption("package.stats.xalt_dir_var")
+         xalt_exec_path <- getOption("package.stats.xalt_exec_path")
+
+         # Make sure that the needed options are set before proceeding
+         if (is.null(xalt_run_uuid_var) || is.null(xalt_dir_var) ||
+             is.null(xalt_exec_path)) {
+            options(package.stats.enabled = FALSE)
+            warning(sprintf("%s: xalt_run_uuid_var, xalt_dir_var, and xalt_exec_path options must be set when logging method is 'xalt'", ownPackageName))
+         } else { 
+            xalt_run_uuid <- Sys.getenv(xalt_run_uuid_var)
+            xalt_dir <- Sys.getenv(xalt_dir_var)
+
+            if (xalt_run_uuid == "" || xalt_dir == "") {
+               warning(sprintf("%s: %s and %s environment variables must be set when logging method is 'xalt'", ownPackageName, xalt_run_uuid_var, xalt_dir_var))
+               options(package.stats.enabled = FALSE)
+            } else {
+               # Construct input to system call to execute XALT package
+               # tracking utility
+               commandPath <- file.path(xalt_dir, xalt_exec_path)
+               commandArguments <- c("-u", xalt_run_uuid, "program", "R", "xalt_run_uuid", xalt_run_uuid, "package_name", pkgName, "package_version", pkgVersion, "package_path", pkgPath)
+
+               returnCode <- tryCatch({
+                  system2(commandPath, args=commandArguments)
+               }, error = function(err) {
+                  warning(err)
+               })
+
+               if (returnCode != "0") {
+                  warning(sprintf("%s: XALT command '%s' exited with code %s", ownPackageName, xalt_exec_path, returnCode)) 
+               }
+               
+            }
+         }
       } else {
          stop(sprintf("%s: Option %s is set to unsupported value `%s`\n"),
             ownPackageName, methodOption, method)        
@@ -255,7 +289,7 @@ function(pkgName, pkgPath) {
 
    }
 
-   print("returning successfully from collectStatistics")
+   #print("returning successfully from collectStatistics")
 }
 
 
@@ -323,7 +357,7 @@ function(ownPackageName, scriptFile, rVersion, pkgName, pkgPath, pkgVersion,
 
       fileExists <- file.exists(tempFilePath)
 
-      print("checking if !fileExists")
+      #print("checking if !fileExists")
 
       # If the log file does not exist for the current R session,
       # then create one.
@@ -345,7 +379,7 @@ function(ownPackageName, scriptFile, rVersion, pkgName, pkgPath, pkgVersion,
       # log file. 
       if (fileExists) {
          sep <- c(",", ",", ",", ",", ",", ",", ",", "")
-         cat(sprintf("writeCsvLogFile pkgPath: %s\n", pkgPath))
+         #cat(sprintf("writeCsvLogFile pkgPath: %s\n", pkgPath))
          cat(scriptFile, rVersion, pkgName, pkgPath, pkgVersion,
             systemInfo[["login"]], systemInfo[["user"]],
             systemInfo[["effective_user"]], "\n", file=tempFilePath, sep=sep,
