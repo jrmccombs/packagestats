@@ -39,7 +39,7 @@ enable/disable the logging and select the logging method, respectively.  If the
 logging method is set to `csvfile`, then the `package.stats.logDirectory` must
 be set to the the directory where the CSV log files are to be saved and the
 `package.stats.logFilePrefix` option must also be set to a prefix string to be
-added to the log file name.  The following shows how to enable and configure
+added to the log file name.  The following example shows how to enable and configure
 collection of package utilization using CSV log files:
 
 ```
