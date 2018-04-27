@@ -17,9 +17,10 @@ functionality.
 
 So that users transparently use the `packagestats` functions, the `packagestats`
 package must be loaded by default.  To accomplish this, the `Rprofile.site`
-file containing the site profile should be modified to include `packagestats`
-as a package under the `defaultPackages` option.  The following code
-accomplishes this when placed in the site profile:
+file (usually found under the /etc directory of the R installation) containing
+the site profile should be modified to include `packagestats` as a package
+under the `defaultPackages` option.  The following code accomplishes this when
+placed in the site profile:
 
 ```
 # Add packagestats to the list of default packages
@@ -39,8 +40,12 @@ enable/disable the logging and select the logging method, respectively.  If the
 logging method is set to `csvfile`, then the `package.stats.logDirectory` must
 be set to the the directory where the CSV log files are to be saved and the
 `package.stats.logFilePrefix` option must also be set to a prefix string to be
-added to the log file name.  The following example shows how to enable and configure
-collection of package utilization using CSV log files:
+added to the log file name.  The log file name is in the form
+`logFilePrefix_login_procesId_timeStamp` where `logFilePrefix` is as discussed
+above, `login` is the user login ID, `processId` is the process ID of the R
+session, and `timeStamp` is the system time converted to an integer using
+`as.integer(Sys.time())`.  The following example shows how to enable and
+configure collection of package utilization using CSV log files:
 
 ```
 # Enable the package statistics
@@ -62,10 +67,9 @@ each R session:
 1. __PackageName__ the name of the package loaded
 1. __PackagePath__ the full path to the R package loaded
 1. __PackageVersion__ the version of the package loaded
-1. __UserLogin__ the user's login name as returned by `base::Sys.info`
-1. __UserName__ the real name of the user as returned by `base::Sys.info`
-1. __EffectiveUser__ the name of the effective user as returned by
-   `base::Sys.info`
+
+The user login ID is not saved in the file, as it is already part of the log
+file name.
 
 To utilize the XALT utility, `package.stats.method` should be set to `xalt` and
 the `package.stats.xalt_run_uuid_var`, `package.stats.xalt_dir_var`, and
@@ -94,12 +98,19 @@ options(package.stats.xalt_exec_path = "libexec/xalt_record_pkg")
 
 A filter list option `package.stats.filter` should also be set to a vector of
 strings specifying packages that are to be exempted from utilization tracking,
-or `NULL` if none are to be exempted.  Also, packages loaded by default by the
-R programming environment upon initialization, are not currently tracked by the 
-`packagestats` package.  This is because those packages are loaded before
-`packagestats`.  However, packages referenced using the `::` operator during
-function calls cause logging of the associated package (if not a member of the
-filter list) because that operator is overloaded to perform logging with
-`packagestats`.
+or `NULL` if none are to be exempted.  Also, to avoid tracking packages loaded
+by default, the filter list should be composed of the `defaultPackages` option
+list and any additional names of packages to be filtered; an example of how
+to do this is given below.
 
+```
+# Filter default packages and any additional packages you want
+# filtered.
+options(package.stats.filter = c(defaultPackages, "base"))
+```
+
+Packages referenced using the `::` operator during
+function calls also trigger logging of the associated package
+(if not a member of the filter list) because that operator is overloaded to
+perform logging with `packagestats`.
 

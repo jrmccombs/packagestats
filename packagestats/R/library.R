@@ -177,6 +177,7 @@ function(package, lib.loc = NULL, quietly = FALSE, warn.conflicts = TRUE,
 collectStatistics <-
 function(pkgName, pkgPath) {
 
+   # Need to use ::: because :: has been overloaded
    pkgVersion <- toString(utils:::packageVersion(pkgName))
    ownPackageName <- methods:::getPackageName()
    packageEnvPath <- paste("package", ownPackageName, sep=":")
@@ -186,7 +187,8 @@ function(pkgName, pkgPath) {
    filterListOption <- "package.stats.filter"
    logDirOption <- "package.stats.logDirectory"
    logFilePrefixOption <- "package.stats.logFilePrefix"
-   csvLabels <- "ScriptFile,RVersion,PackageName,PackagePath,PackageVersion,UserLogin,UserName,EffectiveUser\n"
+   sessionLogFileOption <- "package.stats.sessionLogFile"
+   csvLabels <- "ScriptFile,RVersion,PackageName,PackagePath,PackageVersion\n"
 
    filterList <- getOption(filterListOption)
 
@@ -202,6 +204,7 @@ function(pkgName, pkgPath) {
       # prevent redundant logging within the same R session.
       packageFrame <- utils:::getFromNamespace("package.stats.packageFrame",
          "packagestats")
+      numberOfEntries <- nrow(packageFrame)
       indices <- which(packageFrame$PackageName == pkgName &
          packageFrame$PackageVersion == pkgVersion)
       
@@ -225,6 +228,7 @@ function(pkgName, pkgPath) {
       # Call Sys.info to get user stats
       systemInfo <- Sys.info()
       processId <- Sys.getpid()
+      timeStamp <- as.integer(Sys.time())
 
       argList <- commandArgs(trailingOnly=FALSE) 
 
@@ -243,9 +247,10 @@ function(pkgName, pkgPath) {
 
       if (length(indices) == 0) {
          if (method == "csvfile") {
-            writeCsvLogFile(ownPackageName, scriptFile, rVersion, pkgName,
-               pkgPath, pkgVersion, systemInfo, logFilePrefixOption,
-               logDirOption, processId, csvLabels)
+            writeCsvLogFile(ownPackageName, scriptFile,
+               rVersion, pkgName, pkgPath, pkgVersion, systemInfo,
+               logDirOption, logFilePrefixOption, sessionLogFileOption,
+               processId, timeStamp, csvLabels)
          } else if (method == "xalt") {
  
             # Retrieve needed options relevant to XALT
@@ -303,7 +308,7 @@ function(pkgName, pkgPath) {
 #'
 #' This function writes package utilization information to a file in
 #' comma-separated value format.  The values currently saved to the CSV file
-#' are the following:
+#' for each package entry are the following:
 #' \describe{
 #'   \item{ScriptFile}{the name of the R script file as returned by
 #'      \code{\link[base]{commandArgs}} under the \code{--file} option, or the
@@ -328,16 +333,21 @@ function(pkgName, pkgPath) {
 #'    \code{\link[base]{library}} or \code{\link[base]{require}}
 #' @param systemInfo the system information return by a call to
 #'    \code{\link[base]{Sys.info}}
+#' @param logDirOption the value of the option containing the log directory
 #' @param logFilePrefixOption the value of the option containing the log file
 #'    prefix that will appear in the log file name
-#' @param logDirOption the value of the option containing the log directory
+#' @param sessionLogFileOption the value of the option containing the name
+#'    of the session log file
 #' @param processId the process ID of the R programming environment
+#' @param timeStamp an integer POSIX timestamp
 #' @param csvLabels the labels for each entry in the CSV log file
 writeCsvLogFile <-
 function(ownPackageName, scriptFile, rVersion, pkgName, pkgPath, pkgVersion,
-        systemInfo, logFilePrefixOption, logDirOption, processId, csvLabels) {
+        systemInfo, logDirOption, logFilePrefixOption, sessionLogFileOption,
+        processId, timeStamp, csvLabels) {
    logDirectory <- getOption(logDirOption)
    logFilePrefix <- getOption(logFilePrefixOption)
+   sessionLogFile <- getOption(sessionLogFileOption)
 
    # Check if the logging directory exists.
    # If not, disable the statistics collection.
@@ -353,26 +363,30 @@ function(ownPackageName, scriptFile, rVersion, pkgName, pkgPath, pkgVersion,
       # Deactivate package statistics collection
       options(package.stats.enabled = FALSE)
    } else {
-      tempFileName <- paste(logFilePrefix, systemInfo[["nodename"]], processId,
-         sep="_")
-      tempFilePath <- file.path(logDirectory, tempFileName)
+      if (is.null(sessionLogFile)) {
+         sessionLogFile <- paste(logFilePrefix, systemInfo[["login"]],
+            processId, timeStamp, sep="_")
+      }
 
-      fileExists <- file.exists(tempFilePath)
+      sessionLogFilePath <- file.path(logDirectory, sessionLogFile)
+
+      fileExists <- file.exists(sessionLogFilePath)
 
       #print("checking if !fileExists")
 
       # If the log file does not exist for the current R session,
       # then create one.
       if (!fileExists) {
-         fileCreated <- file.create(tempFilePath)
+         fileCreated <- file.create(sessionLogFilePath)
 
          # Check if the file was created successfully.  If not,
          # then deactivate the statistics collection.
          if (fileCreated) {
-            cat(csvLabels, file=tempFilePath, append=TRUE)
+            options(package.stats.sessionLogFile = sessionLogFile)
+            cat(csvLabels, file=sessionLogFilePath, append=TRUE)
             fileExists <- TRUE
          } else {
-            warning(sprintf("%s: Cannot create package utilization statistics log file '%s'.  Disabling package utilization statistics for this session.", ownPackageName, tempFilePath))
+            warning(sprintf("%s: Cannot create package utilization statistics log file '%s'.  Disabling package utilization statistics for this session.", ownPackageName, sessionLogFilePath))
             options(package.stats.enabled = FALSE)
          }
       }
@@ -380,12 +394,10 @@ function(ownPackageName, scriptFile, rVersion, pkgName, pkgPath, pkgVersion,
       # If the file exists, write the needed information to the session
       # log file. 
       if (fileExists) {
-         sep <- c(",", ",", ",", ",", ",", ",", ",", "")
+         sep <- c(",", ",", ",", ",", "")
          #cat(sprintf("writeCsvLogFile pkgPath: %s\n", pkgPath))
          cat(scriptFile, rVersion, pkgName, pkgPath, pkgVersion,
-            systemInfo[["login"]], systemInfo[["user"]],
-            systemInfo[["effective_user"]], "\n", file=tempFilePath, sep=sep,
-            append=TRUE)
+            "\n", file=sessionLogFilePath, sep=sep, append=TRUE)
       }
    }
 }

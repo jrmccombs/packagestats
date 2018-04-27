@@ -28,17 +28,18 @@ library(devtools)
 
 devtools::load_all(pkg="packagestats")
 
-# Should not add any log entry because both package and help have been set
-library(package=cluster,help=cluster)
+# Should add a log entry even if help has been set
+library(package=acepack,help=acepack)
 # Should not add any log entry because help has been set
 library(help=cluster)
 # Should add a log entry
 library(package=cluster)
 # Should not add a log entry because it is in the filter list
 library(base)
-# Should add a log entry
+# Should add a log entry (unless it was already added above)
 library(cluster)
-# Should add a log entry
+# Should not add a log entry because it is in the default list
+# of packages, which was added to the filter list.
 library(stats)
 
 # Test :: operator
