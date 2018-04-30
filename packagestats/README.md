@@ -26,7 +26,7 @@ placed in the site profile:
 # Add packagestats to the list of default packages
 p <- options("defaultPackages")
 defaultPackages <- p$defaultPackages
-defaultPackages <- c("packagestats", defaultpackages)
+defaultPackages <- c("packagestats", defaultPackages)
 options("defaultPackages" = defaultPackages)
 ```
 
