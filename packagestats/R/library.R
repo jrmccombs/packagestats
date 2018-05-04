@@ -365,7 +365,8 @@ function(ownPackageName, scriptFile, rVersion, pkgName, pkgPath, pkgVersion,
    } else {
       if (is.null(sessionLogFile)) {
          sessionLogFile <- paste(logFilePrefix, systemInfo[["login"]],
-            processId, timeStamp, ".csv", sep="_")
+            processId, timeStamp, sep="_")
+         sessionLogFile <- paste(sessionLogFile, ".csv", sep="")
       }
 
       sessionLogFilePath <- file.path(logDirectory, sessionLogFile)
