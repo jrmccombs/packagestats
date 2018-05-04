@@ -232,7 +232,7 @@ function(pkgName, pkgPath) {
 
       argList <- commandArgs(trailingOnly=FALSE) 
 
-      scriptFile <- ""
+      scriptFile <- "NA"
 
       # Find the name of the script file
       for (a in argList) {
@@ -312,7 +312,7 @@ function(pkgName, pkgPath) {
 #' \describe{
 #'   \item{ScriptFile}{the name of the R script file as returned by
 #'      \code{\link[base]{commandArgs}} under the \code{--file} option, or the
-#'      empty string if the session is interactive}
+#'      string "NA" if the session is interactive}
 #'   \item{RVersion}{the version of the R programming environment}
 #'   \item{PackageName}{the name of the package loaded}
 #'   \item{PackageVersion}{the version of the package loaded}
@@ -365,7 +365,7 @@ function(ownPackageName, scriptFile, rVersion, pkgName, pkgPath, pkgVersion,
    } else {
       if (is.null(sessionLogFile)) {
          sessionLogFile <- paste(logFilePrefix, systemInfo[["login"]],
-            processId, timeStamp, sep="_")
+            processId, timeStamp, ".csv", sep="_")
       }
 
       sessionLogFilePath <- file.path(logDirectory, sessionLogFile)

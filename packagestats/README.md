@@ -41,7 +41,7 @@ logging method is set to `csvfile`, then the `package.stats.logDirectory` must
 be set to the the directory where the CSV log files are to be saved and the
 `package.stats.logFilePrefix` option must also be set to a prefix string to be
 added to the log file name.  The log file name is in the form
-`logFilePrefix_login_procesId_timeStamp` where `logFilePrefix` is as discussed
+`logFilePrefix_login_procesId_timeStamp.csv` where `logFilePrefix` is as discussed
 above, `login` is the user login ID, `processId` is the process ID of the R
 session, and `timeStamp` is the system time converted to an integer using
 `as.integer(Sys.time())`.  The following example shows how to enable and
@@ -61,7 +61,7 @@ options(package.stats.logFilePrefix = "rpkgstats")
 The following information is currently saved in the CSV log file created for
 each R session:
 1. __ScriptFile__ the name of the R script file as returned by
-   `commandArgs` under the `--file` option, or the empty string if the session
+   `commandArgs` under the `--file` option, or the string "NA" if the session
    is interactive
 1. __RVersion__ the version of the R programming environment
 1. __PackageName__ the name of the package loaded
