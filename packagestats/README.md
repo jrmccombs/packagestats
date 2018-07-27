@@ -81,7 +81,9 @@ containing the path to the XALT installation being used, and the
 `package.stats.xalt_exec_path` option specifies the relative path starting from
 the directory specified by the environment variable given by
 `package.stats.xalt_dir_var` to the XALT executable utility for logging R
-package utilization.
+package utilization.  The `packages.stats.suppress.xalt.warnings`, which
+is set to `FALSE` by default, can be used to prevent display of warnings in
+R output when XALT logging has been disabled on the XALT side.
 
 ```
 # Enable the package statistics
@@ -94,6 +96,8 @@ options(package.stats.xalt_run_uuid_var = "XALT_RUN_UUID")
 options(package.stats.xalt_dir_var = "XALT_DIR")
 # Set the relative path to the XALT package logging utility
 options(package.stats.xalt_exec_path = "libexec/xalt_record_pkg")
+# Prevent logging of XALT warning messages
+options(package.stats.suppress.xalt.warnings = TRUE)
 ```
 
 A filter list option `package.stats.filter` should also be set to a vector of

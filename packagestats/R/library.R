@@ -188,9 +188,17 @@ function(pkgName, pkgPath) {
    logDirOption <- "package.stats.logDirectory"
    logFilePrefixOption <- "package.stats.logFilePrefix"
    sessionLogFileOption <- "package.stats.sessionLogFile"
+   suppressXaltWarningsOption <- "package.stats.suppress.xalt.warnings"
    csvLabels <- "ScriptFile,RVersion,PackageName,PackagePath,PackageVersion\n"
 
    filterList <- getOption(filterListOption)
+   suppressXaltWarnings <- getOption(suppressXaltWarningsOption)
+
+   # Set defaults here.  For some reason, these don't persist
+   # when set in the initialize.R file.
+   if (is.null(suppressXaltWarnings)) {
+      options(package.stats.suppress.xalt.warnings = FALSE)
+   }
 
 
    # Make sure needed options are set
@@ -262,13 +270,19 @@ function(pkgName, pkgPath) {
             if (is.null(xalt_run_uuid_var) || is.null(xalt_dir_var) ||
                 is.null(xalt_exec_path)) {
                options(package.stats.enabled = FALSE)
-               warning(sprintf("%s: xalt_run_uuid_var, xalt_dir_var, and xalt_exec_path options must be set when logging method is 'xalt'", ownPackageName))
+               
+               if (!suppressXaltWarnings) {
+                  warning(sprintf("%s: xalt_run_uuid_var, xalt_dir_var, and xalt_exec_path options must be set when logging method is 'xalt'", ownPackageName))
+               }
             } else { 
                xalt_run_uuid <- Sys.getenv(xalt_run_uuid_var)
                xalt_dir <- Sys.getenv(xalt_dir_var)
 
                if (xalt_run_uuid == "" || xalt_dir == "") {
-                  warning(sprintf("%s: %s and %s environment variables must be set when logging method is 'xalt'", ownPackageName, xalt_run_uuid_var, xalt_dir_var))
+                  if (!suppressXaltWarnings) {
+                     warning(sprintf("%s: %s and %s environment variables must be set when logging method is 'xalt'", ownPackageName, xalt_run_uuid_var, xalt_dir_var))
+                  }
+
                   options(package.stats.enabled = FALSE)
                } else {
                   # Construct input to system call to execute XALT package
@@ -279,11 +293,15 @@ function(pkgName, pkgPath) {
                   returnCode <- tryCatch({
                      system2(commandPath, args=commandArguments)
                   }, error = function(err) {
-                     warning(err)
+                     if (!suppressXaltWarnings) {
+                        warning(err)
+                     }
                   })
 
                   if (returnCode != "0") {
-                     warning(sprintf("%s: XALT command '%s' exited with code %s", ownPackageName, xalt_exec_path, returnCode)) 
+                     if (!suppressXaltWarnings) {
+                        warning(sprintf("%s: XALT command '%s' exited with code %s", ownPackageName, xalt_exec_path, returnCode)) 
+                     }
                   }
                
                }
