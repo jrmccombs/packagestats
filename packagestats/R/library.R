@@ -185,7 +185,7 @@ function(pkgName, pkgPath) {
    enableCollectionOption <- "package.stats.enabled"
    methodOption <- "package.stats.method"
    filterListOption <- "package.stats.filter"
-   logDirOption <- "package.stats.logDirectory"
+   logWriterOption <- "package.stats.logWriter"
    logFilePrefixOption <- "package.stats.logFilePrefix"
    sessionLogFileOption <- "package.stats.sessionLogFile"
    suppressXaltWarningsOption <- "package.stats.suppress.xalt.warnings"
@@ -257,7 +257,7 @@ function(pkgName, pkgPath) {
          if (method == "csvfile") {
             writeCsvLogFile(ownPackageName, scriptFile,
                rVersion, pkgName, pkgPath, pkgVersion, systemInfo,
-               logDirOption, logFilePrefixOption, sessionLogFileOption,
+               logWriterOption, logFilePrefixOption, sessionLogFileOption,
                processId, timeStamp, csvLabels)
          } else if (method == "xalt") {
  
@@ -351,7 +351,9 @@ function(pkgName, pkgPath) {
 #'    \code{\link[base]{library}} or \code{\link[base]{require}}
 #' @param systemInfo the system information return by a call to
 #'    \code{\link[base]{Sys.info}}
-#' @param logDirOption the value of the option containing the log directory
+#' @param logWriterOption the value of the option containing the log writer
+#'    executable for gaining acces to the log directory and appending the
+#'    log file using proper permissions
 #' @param logFilePrefixOption the value of the option containing the log file
 #'    prefix that will appear in the log file name
 #' @param sessionLogFileOption the value of the option containing the name
@@ -361,62 +363,60 @@ function(pkgName, pkgPath) {
 #' @param csvLabels the labels for each entry in the CSV log file
 writeCsvLogFile <-
 function(ownPackageName, scriptFile, rVersion, pkgName, pkgPath, pkgVersion,
-        systemInfo, logDirOption, logFilePrefixOption, sessionLogFileOption,
+        systemInfo, logWriterOption, logFilePrefixOption, sessionLogFileOption,
         processId, timeStamp, csvLabels) {
-   logDirectory <- getOption(logDirOption)
+
+   logWriter <- getOption(logWriterOption)
    logFilePrefix <- getOption(logFilePrefixOption)
    sessionLogFile <- getOption(sessionLogFileOption)
 
-   # Check if the logging directory exists.
+   # Check if the log writer is set.
    # If not, disable the statistics collection.
-   if (is.null(logFilePrefix) || is.null(logDirectory)) {
+   if (is.null(logFilePrefix) || is.null(logWriter)) {
       warning(sprintf("%s: Options `%s` and `%s` must be set to enable logging package utilization statistics",
-         ownPackageName, logFilePrefix, logDirectory))
+         ownPackageName, logWriterOption, logFilePrefixOption))
       # Deactivate package statistics collection
       options(package.stats.enabled = FALSE)
       # Check existence of logging directory
-   } else if (!dir.exists(logDirectory)) {
-      warning(sprintf("%s: Package utilization statistics logging directory '%s' is not found.  Disabling package utilization statistics for this session.", ownPackageName, logDirectory))
-
-      # Deactivate package statistics collection
-      options(package.stats.enabled = FALSE)
    } else {
       if (is.null(sessionLogFile)) {
-         sessionLogFile <- paste(logFilePrefix, systemInfo[["login"]],
-            processId, timeStamp, sep="_")
-         sessionLogFile <- paste(sessionLogFile, ".csv", sep="")
-      }
-
-      sessionLogFilePath <- file.path(logDirectory, sessionLogFile)
-
-      fileExists <- file.exists(sessionLogFilePath)
-
-      #print("checking if !fileExists")
-
-      # If the log file does not exist for the current R session,
-      # then create one.
-      if (!fileExists) {
-         fileCreated <- file.create(sessionLogFilePath)
-
-         # Check if the file was created successfully.  If not,
-         # then deactivate the statistics collection.
-         if (fileCreated) {
-            options(package.stats.sessionLogFile = sessionLogFile)
-            cat(csvLabels, file=sessionLogFilePath, append=TRUE)
-            fileExists <- TRUE
-         } else {
-            warning(sprintf("%s: Cannot create package utilization statistics log file '%s'.  Disabling package utilization statistics for this session.", ownPackageName, sessionLogFilePath))
+         if (is.null(logFilePrefix)) {
+            warning(sprintf("%s: Option `%s` must be set when option '%s' is unset to enable logging package utilization statistics",
+               ownPackageName, logFilePrefixOption, sessionLogFileOption))
+            # Deactivate package statistics collection
             options(package.stats.enabled = FALSE)
+         } else {
+            sessionLogFile <- paste(logFilePrefix, systemInfo[["login"]],
+               processId, timeStamp, sep="_")
+            sessionLogFile <- paste(sessionLogFile, ".csv", sep="")
+            options(package.stats.sessionLogFile = sessionLogFile)
          }
       }
 
-      # If the file exists, write the needed information to the session
-      # log file. 
-      if (fileExists) {
-         sep <- c(",", ",", ",", ",", "")
-         #cat(sprintf("writeCsvLogFile pkgPath: %s\n", pkgPath))
-         cat(scriptFile, rVersion, pkgName, pkgPath, pkgVersion,
-            "\n", file=sessionLogFilePath, sep=sep, append=TRUE)
+      # Write the needed information to the session
+      # log file using the log writer utility. 
+
+      logWriter <- getOption(logWriterOption)
+
+      if (is.null(logWriter)) {
+         options(package.stats.enabled = FALSE)
+               
+         warning(sprintf("%s: the logwriter option must be set when logging method is 'csv'", ownPackageName))
+      } else {
+         logLine <- sprintf("%s,%s,%s,%s,%s", scriptFile, rVersion,
+            pkgName, pkgPath, pkgVersion);
+
+         commandArguments <- c("-f", sessionLogFile, "-e", logLine)
+
+         returnCode <- tryCatch({
+            system2(logWriter, args=commandArguments)
+         }, error = function(err) {
+               warning(err)
+         })
+
+         if (returnCode != "0") {
+            warning(sprintf("%s: log writer command '%s' exited with code %s", ownPackageName, logWriter, returnCode)) 
+         }
       }
    }
 }

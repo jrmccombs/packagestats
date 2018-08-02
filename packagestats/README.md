@@ -36,26 +36,38 @@ collection, setting the logging method, and specifying other logging options
 should be set in the `Rprofile.site` file common to all R installations.  All
 package options should be set in the `Rprofile.site` file.  The
 `package.stats.enabled` and `package.stats.method` options must be set to
-enable/disable the logging and select the logging method, respectively.  If the
-logging method is set to `csvfile`, then the `package.stats.logDirectory` must
-be set to the the directory where the CSV log files are to be saved and the
-`package.stats.logFilePrefix` option must also be set to a prefix string to be
-added to the log file name.  The log file name is in the form
-`logFilePrefix_login_procesId_timeStamp.csv` where `logFilePrefix` is as discussed
-above, `login` is the user login ID, `processId` is the process ID of the R
-session, and `timeStamp` is the system time converted to an integer using
-`as.integer(Sys.time())`.  The following example shows how to enable and
-configure collection of package utilization using CSV log files:
+enable/disable the logging and select the logging method, respectively.
+
+## Enabling CSV logging
+The CSV log file method is implemented jointly by the `packagestats` package
+and a C-language utility that performs the actual creation and appending of
+the log file.  This utility is needed so that R users do not need access
+permissions to the logging directory; the set-user-ID and set-group-ID bits
+can be set on the utility so that it has compatible read and write permissions
+with the logging directory.
+
+To use the CSV file logging method, the logging method is set to `csvfile`,
+then the `package.stats.sessionLogFile` option is used to name the log file to
+be used.  If the `package.stats.sessionLogFile` option is unset, then the option
+`package.stats.logFilePrefix` must be set and the log file will
+be constructed according to the form
+`logFilePrefix_login_procesId_timeStamp.csv` where `logFilePrefix` is as an
+arbitrary string given by the option discussed above, `login` is the user
+login ID, `processId` is the process ID of the R session, and `timeStamp`
+is the system time converted to an integer using `as.integer(Sys.time())`.
+The following example shows how to enable and configure collection of
+package utilization using CSV log files with the option
+`package.stats.sessionLogFile` unset:
 
 ```
 # Enable the package statistics
 options(package.stats.enabled = TRUE)
 # Set the logging method to CSV files
 options(package.stats.method = "csvfile")
-# Set the directory for the session pacakge utilization log files 
-options(package.stats.logDirectory = "/path/to/log/files")
 # Set the prefix of each log file name
 options(package.stats.logFilePrefix = "rpkgstats") 
+# Set the path to the C-language log file writer utility
+options(package.stats.logWriter = "/full/path/to/logwriter")
 ```
 
 The following information is currently saved in the CSV log file created for
@@ -71,6 +83,25 @@ each R session:
 The user login ID is not saved in the file, as it is already part of the log
 file name.
 
+### Building the log file writer utility
+The Make files and source code for the utility reside in the `log_writer` 
+directory that resides parallel to the R package source for this package.
+Edit the `Makefile.inc` file and set the wanted compilers and other
+utilities for building the executable utility, and set the `LOGDIR`
+environment variable to the full path of the directory where the R session
+log files are to be stored.  The directory path is hardcoded in the
+executable for security so that only the logging directory can be
+written to.  Type `make all` to make both the debug and release versions, which
+will reside in the `debug` and `release` subdirectories created by the Make
+file.  Copy the release version of the executable from the `release`
+subdirectory to its desired location.  Change the owner and group permissions
+to the account and group suitable for maintaining the log directory, then
+set the set-user-ID and set-group-ID so that the user and group permissions
+on the created log files will have the same user and group IDs of the
+log writer utility.
+
+
+## Enabling XALT logging
 To utilize the XALT utility, `package.stats.method` should be set to `xalt` and
 the `package.stats.xalt_run_uuid_var`, `package.stats.xalt_dir_var`, and
 `package.stats.xalt_exec_path` options should be set.  The
