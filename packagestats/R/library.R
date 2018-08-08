@@ -195,9 +195,10 @@ function(pkgName, pkgPath) {
    suppressXaltWarnings <- getOption(suppressXaltWarningsOption)
 
    # Set defaults here.  For some reason, these don't persist
-   # when set in the initialize.R file.
+   # when set in the initialize.R file, so set them here.
    if (is.null(suppressXaltWarnings)) {
       options(package.stats.suppress.xalt.warnings = FALSE)
+      suppressXaltWarnings = FALSE
    }
 
 
